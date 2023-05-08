@@ -55,14 +55,16 @@ def sanskrit_cleaners(text):
 def cjks_cleaners(text):
     sanskrit_texts = re.findall(r'\[HI\].*?\[HI\]', text)
     english_texts = re.findall(r'\[EN\].*?\[EN\]', text)
-    text = re.sub(r'\[SA\](.*?)\[SA\]',
-                  lambda x: devanagari_to_ipa(x.group(1))+' ', text)
-    text = re.sub(r'\[EN\](.*?)\[EN\]',
-                  lambda x: english_to_lazy_ipa(x.group(1))+' ', text)
-    text = re.sub(r'\s+$', '', text)
-    text = re.sub(r'([^\.,!\?\-…~])$', r'\1.', text)
+    for sanskrit_text in sanskrit_texts:
+        cleaned_text = devanagari_to_ipa(sanskrit_text[4:-4])
+        text = text.replace(sanskrit_text, cleaned_text+' ', 1)
+    for english_text in english_texts:
+        cleaned_text = english_to_lazy_ipa(english_text[4:-4])
+        text = text.replace(english_text, cleaned_text+' ', 1)
+    text = text[:-1]
+    if re.match(r'[^\.,!\?\-…~]', text[-1]):
+        text += '.'
     return text
-
 
 def cjke_cleaners(text):
     from text.english import english_to_ipa2
